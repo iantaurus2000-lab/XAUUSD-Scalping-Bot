@@ -1,0 +1,42 @@
+name: Build XAUUSD APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          mkdir extracted
+          unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d extracted
+          cp -r extracted/XAUUSD_Scalping_Bot_GitHub_HP/app .
+          cp extracted/XAUUSD_Scalping_Bot_GitHub_HP/settings.gradle.kts .
+          cp extracted/XAUUSD_Scalping_Bot_GitHub_HP/build.gradle.kts .
+          cp extracted/XAUUSD_Scalping_Bot_GitHub_HP/gradle.properties .
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Gradle
+        run: |
+          curl -L https://services.gradle.org/distributions/gradle-8.10-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          echo "$PWD/gradle-8.10/bin" >> $GITHUB_PATH
+
+      - name: Build APK
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: XAUUSD-Scalping-Bot-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
