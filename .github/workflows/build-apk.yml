@@ -1,13 +1,20 @@
-name: Extract project ZIP
+name: Build XAUUSD APK
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract ZIP
+        run: unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d project
+
+      - name: Find project
         run: |
-          unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d project
-          find project -maxdepth 3 -type f | head -50
           ROOT=$(find project -name settings.gradle.kts -type f | head -1 | xargs dirname)
-          echo "Project root: $ROOT"
-          cp -r "$ROOT/app" .
-          cp "$ROOT/settings.gradle.kts" .
-          cp "$ROOT/build.gradle.kts" .
-          cp "$ROOT/gradle.properties" .
+          echo "ROOT=$ROOT" >> $GITHUB_ENV
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -20,6 +27,13 @@ name: Extract project ZIP
           curl -L https://services.gradle.org/distributions/gradle-8.10-bin.zip -o gradle.zip
           unzip -q gradle.zip
           echo "$PWD/gradle-8.10/bin" >> $GITHUB_PATH
+
+      - name: Copy Android project
+        run: |
+          cp -r "$ROOT/app" .
+          cp "$ROOT/settings.gradle.kts" .
+          cp "$ROOT/build.gradle.kts" .
+          cp "$ROOT/gradle.properties" .
 
       - name: Build APK
         run: gradle :app:assembleDebug --no-daemon
