@@ -1,24 +1,13 @@
-name: Build XAUUSD APK
-
-on:
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Extract project ZIP
         run: |
-          mkdir project
           unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d project
-          cp -r project/app .
-          cp project/settings.gradle.kts .
-          cp project/build.gradle.kts .
-          cp project/gradle.properties .
+          find project -maxdepth 3 -type f | head -50
+          ROOT=$(find project -name settings.gradle.kts -type f | head -1 | xargs dirname)
+          echo "Project root: $ROOT"
+          cp -r "$ROOT/app" .
+          cp "$ROOT/settings.gradle.kts" .
+          cp "$ROOT/build.gradle.kts" .
+          cp "$ROOT/gradle.properties" .
 
       - name: Setup Java
         uses: actions/setup-java@v4
