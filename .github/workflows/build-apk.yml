@@ -1,4 +1,4 @@
-      - name: Extract project ZIP
+name: Extract project ZIP
         run: |
           unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d project
           find project -maxdepth 3 -type f | head -50
