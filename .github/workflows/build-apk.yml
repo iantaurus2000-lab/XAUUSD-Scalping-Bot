@@ -13,12 +13,12 @@ jobs:
 
       - name: Extract project ZIP
         run: |
-          mkdir extracted
-          unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d extracted
-          cp -r extracted/XAUUSD_Scalping_Bot_GitHub_HP/app .
-          cp extracted/XAUUSD_Scalping_Bot_GitHub_HP/settings.gradle.kts .
-          cp extracted/XAUUSD_Scalping_Bot_GitHub_HP/build.gradle.kts .
-          cp extracted/XAUUSD_Scalping_Bot_GitHub_HP/gradle.properties .
+          mkdir project
+          unzip -q XAUUSD_Scalping_Bot_GitHub_HP.zip -d project
+          cp -r project/app .
+          cp project/settings.gradle.kts .
+          cp project/build.gradle.kts .
+          cp project/gradle.properties .
 
       - name: Setup Java
         uses: actions/setup-java@v4
