@@ -1,0 +1,98 @@
+name: Build XAUUSD APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find V2 ZIP
+        run: |
+          echo "=== FILE DI REPOSITORY ==="
+          find . -maxdepth 3 -type f | sort
+
+          ZIP=$(find . -maxdepth 2 -type f -name "XAUUSD_Scalping_Bot_COMPLETE_V2.zip" | head -1)
+
+          if [ -z "$ZIP" ]; then
+            echo "ERROR: XAUUSD_Scalping_Bot_COMPLETE_V2.zip tidak ditemukan"
+            exit 1
+          fi
+
+          echo "ZIP ditemukan: $ZIP"
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Extract V2 project
+        run: |
+          mkdir -p project
+          unzip -q "$ZIP" -d project
+
+          echo "=== HASIL EKSTRAK ==="
+          find project -maxdepth 6 -type f | sort
+
+      - name: Find Android project
+        run: |
+          ROOT=$(find project -name "settings.gradle.kts" -type f | head -1 | xargs dirname)
+
+          if [ -z "$ROOT" ]; then
+            echo "ERROR: settings.gradle.kts tidak ditemukan"
+            exit 1
+          fi
+
+          echo "Android project:"
+          echo "$ROOT"
+
+          echo "ROOT=$ROOT" >> "$GITHUB_ENV"
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Gradle 8.10
+        run: |
+          curl -L https://services.gradle.org/distributions/gradle-8.10-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          echo "$PWD/gradle-8.10/bin" >> "$GITHUB_PATH"
+
+      - name: Copy Android project
+        run: |
+          cp -r "$ROOT/app" .
+          cp "$ROOT/settings.gradle.kts" .
+          cp "$ROOT/build.gradle.kts" .
+          cp "$ROOT/gradle.properties" .
+
+      - name: Check Gradle project
+        run: |
+          echo "=== BUILD GRADLE ==="
+          cat build.gradle.kts
+
+          echo "=== APP BUILD GRADLE ==="
+          cat app/build.gradle.kts
+
+          echo "=== PROJECT ==="
+          find app -maxdepth 6 -type f | sort
+
+      - name: Build APK
+        run: |
+          gradle :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK
+        run: |
+          echo "=== APK HASIL BUILD ==="
+          ls -lh app/build/outputs/apk/debug/
+
+          test -f app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: XAUUSD-Scalping-Bot-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
